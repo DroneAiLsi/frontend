@@ -33,7 +33,7 @@ export default function UploadSection({ onFileUpload, file }: UploadSectionProps
           {file.type.startsWith('video') ? (
             <video
               src={URL.createObjectURL(file)}
-              className="w-full h-64 object-cover rounded-md"
+              className="w-full h-full object-cover"
               controls
             />
           ) : (

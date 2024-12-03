@@ -12,6 +12,7 @@ export default function DroneAIDetector() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [result, setResult] = useState<string | null>(null)
   const [stats, setStats] = useState<any | null>(null)
+  const [downloadLink, setDownloadLink] = useState<string | null>(null)
 
   const handleFileUpload = async (uploadedFile: File) => {
     setFile(uploadedFile)
@@ -30,7 +31,7 @@ export default function DroneAIDetector() {
       // Set the result and stats from the API response
       setResult(response.data.output_file) // URL or path of the processed image/video
       setStats(response.data.stats) // Stats (count of detected classes)
-      console.log(response.data)
+      setDownloadLink(response.data.download_link) // URL to download the processed file
     } catch (error) {
       console.error('Error uploading the file:', error)
       setResult(null)
@@ -46,6 +47,29 @@ export default function DroneAIDetector() {
     setStats(null)
   }
 
+  const handleDownload = async (downloadLink : string) => {
+    try {
+      const response = await fetch(`http://localhost:5000/${downloadLink}`, {
+        method: "GET",
+      });
+
+      if (!response.ok) {
+        throw new Error("Erreur lors du téléchargement");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "ResultsZip"); // Remplacez par le nom souhaité
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error("Erreur lors du téléchargement :", error);
+      alert("Échec du téléchargement du fichier.");
+    }
+  };
   return (
     <div className="flex-grow">
       <div className="container mx-auto px-4 py-8 space-y-8 flex-grow">
@@ -67,7 +91,7 @@ export default function DroneAIDetector() {
                 <OutputDetails stats={stats} />
                 <div className="flex justify-center">
                   <button
-                    onClick={() => {}}
+                    onClick={() => downloadLink && handleDownload(downloadLink)}
                     className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-300 ease-in-out flex items-center"
                   >
                     Download Results
